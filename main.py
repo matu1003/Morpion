@@ -1,13 +1,16 @@
+
 def afficherGrille(grille):
     #Fonction qui affiche l'etat actuel de la grille
+    print("  1   2   3")
+    lignes = "ABC"
     for ligne in range(len(grille)):
         #Affiche une ligne avec separation entre colonnes
-        contenu = " | ".join(grille[ligne])
+        contenu = lignes[ligne]+ " " + " | ".join(grille[ligne])
         print(contenu)
         if ligne == 0 or ligne == 1:
             #Entre les lignes 1/2 et 2/3,
             #on met des pointillets pour separer les lignes
-            print("-"*len(contenu))
+            print("  "+"-"*(len(contenu)-2))
 
 def verifVictoire(grille):
     #Check Lignes:
@@ -37,16 +40,40 @@ def verifVictoire(grille):
 grille = [["-", "-", "-"] for i in range(3)]
 tour = 0
 pions = ["X", "O"]
+colonnes = ["1", "2", "3"]
+lignes = ["A", "B", "C"]
+
 afficherGrille(grille)
 print("Joueur 1: X")
 print("Joueur 2: O")
-while True:
+partie_en_cours = True
+while partie_en_cours:
     print(f"Au joueur {tour+1}:")
-    col = int(input("Colonne: ")) -1
-    ligne = int(input("Ligne: ")) -1
-    grille[ligne][col] = pions[tour]
+    case = ""
+    conditions_fausses = True
+    while conditions_fausses:
+        case = input("Entrez votre case (ligne puis colonne): ")
+        if len(case) == 2:
+            if case[0] in lignes and case[1] in colonnes:
+                colonne = int(case[1])-1
+                ligne = lignes.index(case[0])
+                if grille[ligne][colonne] == "-":
+                    grille[ligne][colonne] = pions[tour]
+                    conditions_fausses = False
+                else:
+                    print("Case occupée")
+            else:
+                print("Case invalide")
+        else:
+            print("Format invalide")
+
+
     afficherGrille(grille)
-    tour += 1
-    tour %= 2
     if verifVictoire(grille):
-        break
+        partie_en_cours = False
+    else:
+        tour += 1
+        tour %= 2
+
+
+print(f"Le joueur {tour+1} a gagné!")

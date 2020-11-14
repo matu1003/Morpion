@@ -1,9 +1,11 @@
 import pygame
+import time
+
 
 pygame.font.init()
 WIN_W = 666
 WIN_H = 666
-STAT_FONT = pygame.font.SysFont("arial", 200)
+STAT_FONT = pygame.font.SysFont("arial", 30)
 
 win = pygame.display.set_mode((WIN_W, WIN_H))
 pygame.display.set_caption("Morpion")
@@ -11,11 +13,11 @@ win.fill((255, 255, 255))
 
 X = pygame.Surface((WIN_W/3-10, WIN_H/3-10))
 X.fill((255, 255, 255))
-pygame.draw.line(X, (0,0,0), (0,0), (WIN_W//3-10, WIN_H//3-10), 2)
-pygame.draw.line(X, (0,0,0), (WIN_W//3-10,0), (0, WIN_H//3-10), 2)
+pygame.draw.line(X, (237,41,57), (0,0), (WIN_W//3-10, WIN_H//3-10), 4)
+pygame.draw.line(X, (237,41,57), (WIN_W//3-10,0), (0, WIN_H//3-10), 4)
 O = pygame.Surface((WIN_W//3-10, WIN_H/3-10))
 O.fill((255, 255, 255))
-pygame.draw.circle(O, (0,0,0), (WIN_W//6-5, WIN_H//6-5), WIN_H//6-5, 2)
+pygame.draw.circle(O, (80,220,100), (WIN_W//6-5, WIN_H//6-5), WIN_H//6-5, 4)
 
 
 grille = [["-", "-", "-"] for i in range(3)]
@@ -43,6 +45,17 @@ def verifVictoire(grille):
     #Si aucune état terminal n'est atteint:
     return False
 
+
+def egalite(grille):
+    tie = True
+    for ligne in grille:
+        for elt in ligne:
+            if elt == "-":
+                tie = False
+    return tie
+
+
+
 def dess_env():
     pygame.draw.line(win, (0,0,0), (WIN_W//3, 0), (WIN_W//3, WIN_H), 1)
     pygame.draw.line(win, (0,0,0), (2*WIN_W//3, 0), (2*WIN_W//3, WIN_H), 1)
@@ -55,28 +68,62 @@ def dess_env():
             if grille[i][j] == "O":
                 win.blit(O, (j*(WIN_W//3)+5, i*(WIN_H//3)+5))
 
-game_running = True
-tour = 0
-pions = ['X', 'O']
+
 clock = pygame.time.Clock()
-while game_running:
-    clock.tick(5)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+scores = [0, 0]
+continuer = True
+while continuer:
+    game_running = True
+    tour = 0
+    pions = ['X', 'O']
+    grille = [["-", "-", "-"] for i in range(3)]
+    while game_running:
+        clock.tick(5)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game_running = False
+                break
+            if event.type == pygame.MOUSEBUTTONUP:
+                pos = pygame.mouse.get_pos()
+                xpos = pos[0]//(WIN_W//3)
+                ypos = pos[1]//(WIN_H//3)
+                if grille[ypos][xpos] == "-":
+                    grille[ypos][xpos] = pions[tour]
+                    tour += 1
+                    tour %= 2
+
+
+        win.fill((255, 255, 255))
+        dess_env()
+        pygame.display.update()
+        if verifVictoire(grille):
+            msg = f"Le joueur {((tour+1)%2)+1} a gagné!"
             game_running = False
-            break
-        if event.type == pygame.MOUSEBUTTONUP:
-            pos = pygame.mouse.get_pos()
-            print(pos)
-            xpos = pos[0]//(WIN_W//3)
-            ypos = pos[1]//(WIN_H//3)
-            grille[ypos][xpos] = pions[tour]
-            tour += 1
-            tour %= 2
+        if egalite(grille):
+            msg = "Egalité!"
+            game_running = False
 
+    start = time.time()
+    popup = pygame.Surface((400, 200))
+    popup.fill((255, 255, 255))
+    pygame.draw.rect(popup, (0,0,0), (3,3,394, 194), 6)
 
-    win.fill((255, 255, 255))
-    dess_env()
-    pygame.display.update()
-    if verifVictoire(grille):
-        game_running = False
+    resultat = STAT_FONT.render(msg, 1, (0,0,255))
+    popup.blit(resultat, (200-resultat.get_width()//2, 20))
+
+    recommencer = STAT_FONT.render("Cliquer pour recommencer", 1, (0,0,255))
+    popup.blit(recommencer, (200-recommencer.get_width()//2,80))
+
+    menu = True
+    while menu:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                menu = False
+                continuer = False
+                break
+            if event.type == pygame.MOUSEBUTTONUP:
+                menu = False
+                break
+
+        win.blit(popup, ((WIN_W//2)-200, ((WIN_H//2)-100)))
+        pygame.display.update()

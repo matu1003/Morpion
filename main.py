@@ -35,6 +35,14 @@ def verifVictoire(grille):
     #Si aucune état terminal n'est atteint:
     return False
 
+def egalite(grille):
+    tie = True
+    for ligne in grille:
+        for elt in ligne:
+            if elt == "-":
+                tie = False
+    return tie
+
 
 
 grille = [["-", "-", "-"] for i in range(3)]
@@ -71,9 +79,13 @@ while partie_en_cours:
     afficherGrille(grille)
     if verifVictoire(grille):
         partie_en_cours = False
+        msg = f"Le joueur {tour+1} a gagné!"
+    elif egalite:
+        partie_en_cours = False
+        msg = "Egalite"
     else:
         tour += 1
         tour %= 2
 
 
-print(f"Le joueur {tour+1} a gagné!")
+print(msg)

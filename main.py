@@ -10,7 +10,7 @@ def afficherGrille(grille):
         if ligne == 0 or ligne == 1:
             #Entre les lignes 1/2 et 2/3,
             #on met des pointillets pour separer les lignes
-            print("  "+"-"*(len(contenu)-2))
+            print("  "+"-"*(len(contenu)))
 
 def verifVictoire(grille):
     #Check Lignes:

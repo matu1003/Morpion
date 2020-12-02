@@ -1,5 +1,4 @@
 import pygame
-import time
 
 
 pygame.font.init()
@@ -22,6 +21,7 @@ pygame.draw.circle(O, (80,220,100), (WIN_W//6-5, WIN_H//6-5), WIN_H//6-5, 4)
 
 
 grille = [["-", "-", "-"] for i in range(3)]
+pions = ['X', 'O']
 scores = [0, 0]
 
 def verifVictoire(grille):
@@ -57,6 +57,37 @@ def egalite(grille):
     return tie
 
 
+def minimax(grille, tourIA, nivUn):
+    if verifVictoire(grille):
+        if tourIA:
+            return -1
+        else:
+            return 1
+    if egalite(grille):
+        return 0
+
+    eval = []
+    eval_score = 2
+    if tourIA:
+        eval_score = -2
+
+    for ligne in range(3):
+        for col in range(3):
+            if grille[ligne][col] == "-":
+                prediction = [i[:] for i in grille]
+                prediction[ligne][col] = pions[int(tourIA)]
+                score = minimax(prediction, not(tourIA), False)
+                if tourIA and score > eval_score:
+                    eval = prediction
+                    eval_score = score
+                elif not(tourIA) and score < eval_score:
+                    eval = prediction
+                    eval_score = score
+    if nivUn:
+        return eval
+    else:
+        return eval_score
+
 
 def dess_env():
     score1 = STAT_FONT.render(f"X: {scores[0]}", 1, (237,41,57))
@@ -79,17 +110,33 @@ def dess_env():
 
 
 continuer = True
+clock = pygame.time.Clock()
 while continuer:
     game_running = True
-    tour = 0
-    pions = ['X', 'O']
+    tour = 1
     grille = [["-", "-", "-"] for i in range(3)]
     while game_running:
+        clock.tick(1)
+        if tour == 1:
+            grille = minimax(grille, True, True)
+            tour += 1
+            tour %= 2
+        # elif tour == 0:
+        # Pour faire jouer deux IA l une contre l'autre
+        #     grille = minimax(grille, False, True)
+        #     tour += 1
+        #     tour %= 2
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_running = False
+                continuer = False
+                pygame.quit()
                 break
-            if event.type == pygame.MOUSEBUTTONUP:
+
+
+
+            if event.type == pygame.MOUSEBUTTONUP and tour == 0:
                 pos = pygame.mouse.get_pos()
                 xpos = pos[0]//(WIN_W//3)
                 ypos = (pos[1]-BARRE)//(WIN_H//3)
@@ -98,6 +145,8 @@ while continuer:
                     tour += 1
                     tour %= 2
 
+        if not(game_running):
+            break
 
         win.fill((255, 255, 255))
         dess_env()
@@ -111,7 +160,7 @@ while continuer:
             msg = "Egalité!"
             game_running = False
 
-    start = time.time()
+
     popup = pygame.Surface((400, 200))
     popup.fill((255, 255, 255))
     pygame.draw.rect(popup, (0,0,0), (3,3,394, 194), 6)
